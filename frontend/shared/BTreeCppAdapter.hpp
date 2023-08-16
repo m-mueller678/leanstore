@@ -10,14 +10,14 @@
 #include <string>
 
 template <class Record>
-struct BTreeCppAdater : Adapter<Record> {
+struct BTreeCppAdapter final : Adapter<Record> {
    BTree* tree;
    string name;
-   BTreeCppAdater()
+   BTreeCppAdapter()
    {
       // hack
    }
-   BTreeCppAdater(string name) : name(name) { tree = new BTree(); }
+   BTreeCppAdapter(string name) : name(name) { tree = new BTree(); }
    // -------------------------------------------------------------------------------------
    void printTreeHeight()
    {
@@ -47,26 +47,32 @@ struct BTreeCppAdater : Adapter<Record> {
    }
 
    // -------------------------------------------------------------------------------------
-   template <class Fn>
-   void lookup1(const typename Record::Key& key, Fn fn)
+   void lookup1(const typename Record::Key& key, const std::function<void(const Record&)>& cb)
    {
       u8 k[Record::maxFoldLength()];
       u16 l = Record::foldKey(k, key);
       u32 len_out;
       u8* value_ptr = tree->lookup(k, l, len_out);
       assert(value_ptr);
-      fn(*reinterpret_cast<const Record*>(value_ptr));
+      cb(*reinterpret_cast<const Record*>(value_ptr));
    }
+
+
    // -------------------------------------------------------------------------------------
-   template <class Fn>
-   void update1(const typename Record::Key& key, Fn fn)
+   void update1(const typename Record::Key& key, const std::function<void(Record&)>& cb, leanstore::UpdateSameSizeInPlaceDescriptor& update_descriptor)
    {
       u8 k[Record::maxFoldLength()];
       u16 l = Record::foldKey(k, key);
       u32 len_out;
       u8* value_ptr = tree->lookup(k, l, len_out);
+      ensure(value_ptr);
+      ensure(update_descriptor.count > 0);
+      update_descriptor.count = 1;
+      // not quite sure what offset refers to
+      update_descriptor.slots[0].offset = 0;
+      update_descriptor.slots[0].length = sizeof(Record);
       if (value_ptr) {
-         fn(*reinterpret_cast<Record*>(value_ptr));
+         cb(*reinterpret_cast<Record*>(value_ptr));
          tree->testing_update_payload(k, l, value_ptr);
       }
    }
@@ -111,4 +117,6 @@ struct BTreeCppAdater : Adapter<Record> {
       });
       return cnt;
    }
+
+
 };

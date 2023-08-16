@@ -1,4 +1,4 @@
-#include "../shared/LeanStoreAdapter.hpp"
+#include "../shared/BTreeCppAdapter.hpp"
 #include "../shared/Schema.hpp"
 #include "Units.hpp"
 #include "leanstore/Config.hpp"
@@ -47,7 +47,7 @@ int main(int argc, char** argv)
    chrono::high_resolution_clock::time_point begin, end;
    // -------------------------------------------------------------------------------------
    // Always init with the maximum number of threads (FLAGS_worker_threads)
-   LeanStoreAdapter<KVTable> table;
+   BTreeCppAdapter<KVTable> table;
    // -------------------------------------------------------------------------------------
    leanstore::TX_ISOLATION_LEVEL isolation_level = leanstore::parseIsolationLevel(FLAGS_isolation_level);
    const TX_MODE tx_type = TX_MODE::OLTP;
@@ -90,7 +90,6 @@ int main(int argc, char** argv)
             begin = chrono::high_resolution_clock::now();
             for (u64 i = 0; i < n; ++i) {
                YCSBPayload result;
-               // cr::Worker::my().startTX(tx_type, isolation_level);
                table.lookup1({static_cast<YCSBKey>(i)}, [&](const KVTable& record) { result = record.my_payload; });
             }
             end = chrono::high_resolution_clock::now();
@@ -107,9 +106,7 @@ int main(int argc, char** argv)
          YCSBPayload payload;
          utils::RandomGenerator::getRandString(reinterpret_cast<u8*>(&payload), sizeof(YCSBPayload));
          YCSBKey key = i;
-         cr::Worker::my().startTX(tx_type, leanstore::TX_ISOLATION_LEVEL::SNAPSHOT_ISOLATION);
          table.insert({key}, {payload});
-         cr::Worker::my().commitTX();
       }
       end = chrono::high_resolution_clock::now();
       cout << "time elapsed = " << (chrono::duration_cast<chrono::microseconds>(end - begin).count() / 1000000.0) << endl;
@@ -122,7 +119,12 @@ int main(int argc, char** argv)
    // -------------------------------------------------------------------------------------
    cout << "~Transactions" << endl;
    atomic<bool> keep_running = true;
-   const u32 exec_threads = FLAGS_ycsb_threads ? FLAGS_ycsb_threads : FLAGS_worker_threads;
+
+   if (FLAGS_ycsb_sleepy_thread) {
+      cout<<"threads not supported"<<endl;
+      throw;
+   }
+
    std::thread worker([&]() {
       while (keep_running) {
          jumpmuTry()
@@ -135,7 +137,6 @@ int main(int argc, char** argv)
             }
             assert(key < ycsb_tuple_count);
             YCSBPayload result;
-            cr::Worker::my().startTX(tx_type, isolation_level);
             for (u64 op_i = 0; op_i < FLAGS_ycsb_ops_per_tx; op_i++) {
                if (FLAGS_ycsb_read_ratio == 100 || utils::RandomGenerator::getRandU64(0, 100) < FLAGS_ycsb_read_ratio) {
                   table.lookup1({key}, [&](const KVTable&) {});         // result = record.my_payload;
@@ -149,7 +150,6 @@ int main(int argc, char** argv)
                   leanstore::storage::BMC::global_bf->evictLastPage();  // to ignore the replacement strategy effect on MVCC experiment
                }
             }
-            cr::Worker::my().commitTX();
             WorkerCounters::myCounters().tx++;
          }
          jumpmuCatch()

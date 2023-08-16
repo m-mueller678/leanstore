@@ -10,7 +10,7 @@ add_executable(ycsb ycsb/ycsb.cpp)
 target_link_libraries(ycsb leanstore Threads::Threads)
 target_include_directories(ycsb PRIVATE ${SHARED_INCLUDE_DIRECTORY})
 
-add_executable(btree_cpp_ycsb ycsb/btree_cpp_ycsb.cpp)
+add_executable(btree_cpp_ycsb ycsb/btree_cpp_ycsb.cpp ../../btree-cpp/btree/anynode.cpp  ../../btree-cpp/btree/btree2020.cpp  ../../btree-cpp/btree/debug.cpp  ../../btree-cpp/btree/dense.cpp  ../../btree-cpp/btree/hash.cpp)
 target_link_libraries(btree_cpp_ycsb leanstore Threads::Threads)
 target_include_directories(btree_cpp_ycsb PRIVATE ${SHARED_INCLUDE_DIRECTORY})
 

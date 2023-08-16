@@ -84,7 +84,7 @@ int main(int argc, char** argv)
    }
 
    uint64_t txCount = 0;
-2
+
    std::thread worker([&]() {
       perfEvent.setParam("op", "tx");
       BTreeCppPerfEventBlock perfEventBlock(perfEvent, n);

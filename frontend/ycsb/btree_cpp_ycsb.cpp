@@ -57,6 +57,8 @@ int main(int argc, char** argv)
                                     ? FLAGS_ycsb_tuple_count
                                     : FLAGS_target_gib * 1024 * 1024 * 1024 * 1.0 / 2.0 / (sizeof(YCSBKey) + sizeof(YCSBPayload));
    BTreeCppPerfEvent perfEvent = makePerfEvent("ycsb", false, ycsb_tuple_count);
+   perfEvent.setParam("ycsb_read_ratio", FLAGS_ycsb_read_ratio);
+   perfEvent.setParam("payload_size", FLAGS_ycsb_payload_size);
 
    // Insert values
    const u64 n = ycsb_tuple_count;

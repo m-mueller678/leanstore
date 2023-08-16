@@ -125,9 +125,12 @@ int main(int argc, char** argv)
       throw;
    }
 
+   uint64_t tx_count=0;
+
    std::thread worker([&]() {
+      jumpmuTry()
+      begin = chrono::high_resolution_clock::now();
       while (keep_running) {
-         jumpmuTry()
          {
             YCSBKey key;
             if (FLAGS_zipf_factor == 0) {
@@ -150,14 +153,15 @@ int main(int argc, char** argv)
                   leanstore::storage::BMC::global_bf->evictLastPage();  // to ignore the replacement strategy effect on MVCC experiment
                }
             }
-            WorkerCounters::myCounters().tx++;
+            ++tx_count;
          }
-         jumpmuCatch()
-         {
-            // no idea what triggers jumpmuCatch, but it hopefully does not happen if you don't use leanstore
-            abort();
-            WorkerCounters::myCounters().tx_abort++;
-         }
+      }
+      end=chrono::high_resolution_clock::now();
+      jumpmuCatch()
+      {
+         // no idea what triggers jumpmuCatch, but it hopefully does not happen if you don't use leanstore
+         abort();
+         WorkerCounters::myCounters().tx_abort++;
       }
    });
 
@@ -169,5 +173,6 @@ int main(int argc, char** argv)
       worker.join();
    }
    cout << "-------------------------------------------------------------------------------------" << endl;
+   cout << calculateMTPS(begin,end,tx_count) << " M tps" << endl;
    return 0;
 }

@@ -63,6 +63,7 @@ int main(int argc, char** argv)
    // -------------------------------------------------------------------------------------
 
    {
+      perfEvent.setParam("op", "insert");
       BTreeCppPerfEventBlock perfEventBlock(perfEvent, n);
       begin = chrono::high_resolution_clock::now();
       for (u64 i = 0; i < n; ++i) {
@@ -83,8 +84,9 @@ int main(int argc, char** argv)
    }
 
    uint64_t txCount = 0;
-
+2
    std::thread worker([&]() {
+      perfEvent.setParam("op", "tx");
       BTreeCppPerfEventBlock perfEventBlock(perfEvent, n);
       jumpmuTry() while (keep_running)
       {

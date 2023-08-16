@@ -1,7 +1,7 @@
 #pragma once
 #include "Adapter.hpp"
 // -------------------------------------------------------------------------------------
-#include "../../btree-cpp/btree/btree2020.hpp"
+#include <btree2020.hpp>
 // -------------------------------------------------------------------------------------
 #include <cassert>
 #include <cstdint>

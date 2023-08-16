@@ -62,44 +62,44 @@ target_include_directories(lmdb_ycsb PRIVATE ${SHARED_INCLUDE_DIRECTORY})
 
 
 # btree-cpp
-set (btree_cpp_ycsb_sources ycsb/btree_cpp_ycsb.cpp ../../btree-cpp/btree/anynode.cpp  ../../btree-cpp/btree/btree2020.cpp  ../../btree-cpp/btree/debug.cpp  ../../btree-cpp/btree/dense.cpp  ../../btree-cpp/btree/hash.cpp)
+set (btree_cpp_ycsb_sources ycsb/btree_cpp_ycsb.cpp ../../btree/anynode.cpp  ../../btree/btree2020.cpp  ../../btree/debug.cpp  ../../btree/dense.cpp  ../../btree/hash.cpp)
 
 add_executable(btree_cpp_ycsb ${btree_cpp_ycsb_sources})
 target_link_libraries(btree_cpp_ycsb leanstore Threads::Threads)
-target_include_directories(btree_cpp_ycsb PRIVATE ${SHARED_INCLUDE_DIRECTORY} "../../btree-cpp/btree/")
+target_include_directories(btree_cpp_ycsb PRIVATE ${SHARED_INCLUDE_DIRECTORY} "../../btree/")
 
 ## btree-cpp named builds
 add_executable(btree_cpp_ycsb_baseline ${btree_cpp_ycsb_sources})
 target_link_libraries(btree_cpp_ycsb_baseline leanstore Threads::Threads)
-target_include_directories(btree_cpp_ycsb_baseline PRIVATE ${SHARED_INCLUDE_DIRECTORY} "../../btree-cpp/named-configs/" "../../btree-cpp/btree/")
+target_include_directories(btree_cpp_ycsb_baseline PRIVATE ${SHARED_INCLUDE_DIRECTORY} "../../named-configs/" "../../btree/")
 target_compile_options(btree_cpp_ycsb_baseline PRIVATE -include baseline.hpp -DNAMED_CONFIG=\"baseline\")
 
 add_executable(btree_cpp_ycsb_prefix ${btree_cpp_ycsb_sources})
 target_link_libraries(btree_cpp_ycsb_prefix leanstore Threads::Threads)
-target_include_directories(btree_cpp_ycsb_prefix PRIVATE ${SHARED_INCLUDE_DIRECTORY} "../../btree-cpp/named-configs/" "../../btree-cpp/btree/")
+target_include_directories(btree_cpp_ycsb_prefix PRIVATE ${SHARED_INCLUDE_DIRECTORY} "../../named-configs/" "../../btree/")
 target_compile_options(btree_cpp_ycsb_prefix PRIVATE -include prefix.hpp -DNAMED_CONFIG=\"prefix\")
 
 add_executable(btree_cpp_ycsb_heads ${btree_cpp_ycsb_sources})
 target_link_libraries(btree_cpp_ycsb_heads leanstore Threads::Threads)
-target_include_directories(btree_cpp_ycsb_heads PRIVATE ${SHARED_INCLUDE_DIRECTORY} "../../btree-cpp/named-configs/" "../../btree-cpp/btree/")
+target_include_directories(btree_cpp_ycsb_heads PRIVATE ${SHARED_INCLUDE_DIRECTORY} "../../named-configs/" "../../btree/")
 target_compile_options(btree_cpp_ycsb_heads PRIVATE -include heads.hpp -DNAMED_CONFIG=\"heads\")
 
 add_executable(btree_cpp_ycsb_hints ${btree_cpp_ycsb_sources})
 target_link_libraries(btree_cpp_ycsb_hints leanstore Threads::Threads)
-target_include_directories(btree_cpp_ycsb_hints PRIVATE ${SHARED_INCLUDE_DIRECTORY} "../../btree-cpp/named-configs/" "../../btree-cpp/btree/")
+target_include_directories(btree_cpp_ycsb_hints PRIVATE ${SHARED_INCLUDE_DIRECTORY} "../../named-configs/" "../../btree/")
 target_compile_options(btree_cpp_ycsb_hints PRIVATE -include hints.hpp -DNAMED_CONFIG=\"hints\")
 
 add_executable(btree_cpp_ycsb_hash ${btree_cpp_ycsb_sources})
 target_link_libraries(btree_cpp_ycsb_hash leanstore Threads::Threads)
-target_include_directories(btree_cpp_ycsb_hash PRIVATE ${SHARED_INCLUDE_DIRECTORY} "../../btree-cpp/named-configs/" "../../btree-cpp/btree/")
+target_include_directories(btree_cpp_ycsb_hash PRIVATE ${SHARED_INCLUDE_DIRECTORY} "../../named-configs/" "../../btree/")
 target_compile_options(btree_cpp_ycsb_hash PRIVATE -include hash.hpp -DNAMED_CONFIG=\"hash\")
 
 add_executable(btree_cpp_ycsb_inner ${btree_cpp_ycsb_sources})
 target_link_libraries(btree_cpp_ycsb_inner leanstore Threads::Threads)
-target_include_directories(btree_cpp_ycsb_inner PRIVATE ${SHARED_INCLUDE_DIRECTORY} "../../btree-cpp/named-configs/" "../../btree-cpp/btree/")
+target_include_directories(btree_cpp_ycsb_inner PRIVATE ${SHARED_INCLUDE_DIRECTORY} "../../named-configs/" "../../btree/")
 target_compile_options(btree_cpp_ycsb_inner PRIVATE -include inner.hpp -DNAMED_CONFIG=\"inner\")
 
 add_executable(btree_cpp_ycsb_dense ${btree_cpp_ycsb_sources})
 target_link_libraries(btree_cpp_ycsb_dense leanstore Threads::Threads)
-target_include_directories(btree_cpp_ycsb_dense PRIVATE ${SHARED_INCLUDE_DIRECTORY} "../../btree-cpp/named-configs/" "../../btree-cpp/btree/")
+target_include_directories(btree_cpp_ycsb_dense PRIVATE ${SHARED_INCLUDE_DIRECTORY} "../../named-configs/" "../../btree/")
 target_compile_options(btree_cpp_ycsb_dense PRIVATE -include dense.hpp -DNAMED_CONFIG=\"dense\")

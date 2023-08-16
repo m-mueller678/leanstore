@@ -13,11 +13,10 @@ template <class Record>
 struct BTreeCppAdapter final : Adapter<Record> {
    BTree* tree;
    string name;
-   BTreeCppAdapter()
+   BTreeCppAdapter():tree(new BTree())
    {
-      // hack
    }
-   BTreeCppAdapter(string name) : name(name) { tree = new BTree(); }
+   BTreeCppAdapter(string name) : name(name),tree(new BTree()) {  }
    // -------------------------------------------------------------------------------------
    void printTreeHeight()
    {

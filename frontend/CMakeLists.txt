@@ -10,10 +10,6 @@ add_executable(ycsb ycsb/ycsb.cpp)
 target_link_libraries(ycsb leanstore Threads::Threads)
 target_include_directories(ycsb PRIVATE ${SHARED_INCLUDE_DIRECTORY})
 
-add_executable(btree_cpp_ycsb ycsb/btree_cpp_ycsb.cpp ../../btree-cpp/btree/anynode.cpp  ../../btree-cpp/btree/btree2020.cpp  ../../btree-cpp/btree/debug.cpp  ../../btree-cpp/btree/dense.cpp  ../../btree-cpp/btree/hash.cpp)
-target_link_libraries(btree_cpp_ycsb leanstore Threads::Threads)
-target_include_directories(btree_cpp_ycsb PRIVATE ${SHARED_INCLUDE_DIRECTORY})
-
 add_executable(deterministic ycsb/deterministic.cpp)
 target_link_libraries(deterministic leanstore Threads::Threads)
 target_include_directories(deterministic PRIVATE ${SHARED_INCLUDE_DIRECTORY})
@@ -63,3 +59,18 @@ add_executable(lmdb_ycsb ycsb/lmdb_ycsb.cpp)
 target_link_libraries(lmdb_ycsb leanstore lmdb Threads::Threads)
 target_include_directories(lmdb_ycsb PRIVATE ${SHARED_INCLUDE_DIRECTORY})
 # sudo apt-get install liblmdb-dev
+
+
+# btree-cpp
+set (btree_cpp_ycsb_sources ycsb/btree_cpp_ycsb.cpp ../../btree-cpp/btree/anynode.cpp  ../../btree-cpp/btree/btree2020.cpp  ../../btree-cpp/btree/debug.cpp  ../../btree-cpp/btree/dense.cpp  ../../btree-cpp/btree/hash.cpp)
+
+add_executable(btree_cpp_ycsb ${btree_cpp_ycsb_sources})
+target_link_libraries(btree_cpp_ycsb leanstore Threads::Threads)
+target_include_directories(btree_cpp_ycsb PRIVATE ${SHARED_INCLUDE_DIRECTORY})
+
+## btree-cpp named builds
+add_executable(btree_cpp_ycsb_baseline ${btree_cpp_ycsb_sources})
+target_link_libraries(btree_cpp_ycsb_baseline leanstore Threads::Threads)
+target_include_directories(btree_cpp_ycsb_baseline PRIVATE ${SHARED_INCLUDE_DIRECTORY} "../../btree-cpp/named-configs/" "../../btree-cpp/btree/")
+target_compile_options(btree_cpp_ycsb_baseline PRIVATE -include baseline.hpp -DNAMED_CONFIG=\"baseline\")
+#target_compile_definitions(btree_cpp_ycsb_baseline PRIVATE NAMED_CONFIG=\"baseline\")

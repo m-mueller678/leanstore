@@ -1,3 +1,4 @@
+#include <BtreeCppPerfEvent.hpp>
 #include "../shared/BTreeCppAdapter.hpp"
 #include "../shared/Schema.hpp"
 #include "Units.hpp"
@@ -55,52 +56,14 @@ int main(int argc, char** argv)
    const u64 ycsb_tuple_count = (FLAGS_ycsb_tuple_count)
                                     ? FLAGS_ycsb_tuple_count
                                     : FLAGS_target_gib * 1024 * 1024 * 1024 * 1.0 / 2.0 / (sizeof(YCSBKey) + sizeof(YCSBPayload));
+   BTreeCppPerfEvent perfEvent = makePerfEvent("ycsb", false, ycsb_tuple_count);
+
    // Insert values
    const u64 n = ycsb_tuple_count;
    // -------------------------------------------------------------------------------------
-   if (FLAGS_tmp4) {
-      // -------------------------------------------------------------------------------------
-      std::ofstream csv;
-      csv.open("zipf.csv", ios::trunc);
-      csv.seekp(0, ios::end);
-      csv << std::setprecision(2) << std::fixed;
-      std::unordered_map<u64, u64> ht;
-      auto zipf_random = std::make_unique<utils::ScrambledZipfGenerator>(0, ycsb_tuple_count, FLAGS_zipf_factor);
-      for (u64 t_i = 0; t_i < (FLAGS_tmp4 ? FLAGS_tmp4 : 1e6); t_i++) {
-         u64 key = zipf_random->rand();
-         if (ht.find(key) == ht.end()) {
-            ht[key] = 0;
-         } else {
-            ht[key]++;
-         }
-      }
-      csv << "key,count" << endl;
-      for (auto& [key, value] : ht) {
-         csv << key << "," << value << endl;
-      }
-      cout << ht.size() << endl;
-      return 0;
-   }
-   // -------------------------------------------------------------------------------------
-   if (FLAGS_recover) {
-      // Warmup
-      if (FLAGS_ycsb_warmup) {
-         cout << "Warmup: Scanning..." << endl;
-         {
-            begin = chrono::high_resolution_clock::now();
-            for (u64 i = 0; i < n; ++i) {
-               YCSBPayload result;
-               table.lookup1({static_cast<YCSBKey>(i)}, [&](const KVTable& record) { result = record.my_payload; });
-            }
-            end = chrono::high_resolution_clock::now();
-         }
-         // -------------------------------------------------------------------------------------
-         cout << "time elapsed = " << (chrono::duration_cast<chrono::microseconds>(end - begin).count() / 1000000.0) << endl;
-         cout << calculateMTPS(begin, end, n) << " M tps" << endl;
-         cout << "-------------------------------------------------------------------------------------" << endl;
-      }
-   } else {
-      cout << "Inserting " << ycsb_tuple_count << " values" << endl;
+
+   {
+      BTreeCppPerfEventBlock perfEventBlock(perfEvent, n);
       begin = chrono::high_resolution_clock::now();
       for (u64 i = 0; i < n; ++i) {
          YCSBPayload payload;
@@ -109,28 +72,22 @@ int main(int argc, char** argv)
          table.insert({key}, {payload});
       }
       end = chrono::high_resolution_clock::now();
-      cout << "time elapsed = " << (chrono::duration_cast<chrono::microseconds>(end - begin).count() / 1000000.0) << endl;
-      cout << calculateMTPS(begin, end, n) << " M tps" << endl;
-      // -------------------------------------------------------------------------------------
    }
    // -------------------------------------------------------------------------------------
    auto zipf_random = std::make_unique<utils::ScrambledZipfGenerator>(0, ycsb_tuple_count, FLAGS_zipf_factor);
-   cout << setprecision(4);
-   // -------------------------------------------------------------------------------------
-   cout << "~Transactions" << endl;
    atomic<bool> keep_running = true;
 
    if (FLAGS_ycsb_sleepy_thread) {
-      cout<<"threads not supported"<<endl;
+      cerr << "threads not supported" << endl;
       throw;
    }
 
-   uint64_t tx_count=0;
+   uint64_t txCount = 0;
 
    std::thread worker([&]() {
-      jumpmuTry()
-      begin = chrono::high_resolution_clock::now();
-      while (keep_running) {
+      BTreeCppPerfEventBlock perfEventBlock(perfEvent, n);
+      jumpmuTry() while (keep_running)
+      {
          {
             YCSBKey key;
             if (FLAGS_zipf_factor == 0) {
@@ -153,10 +110,10 @@ int main(int argc, char** argv)
                   leanstore::storage::BMC::global_bf->evictLastPage();  // to ignore the replacement strategy effect on MVCC experiment
                }
             }
-            ++tx_count;
+            ++txCount;
          }
       }
-      end=chrono::high_resolution_clock::now();
+      perfEventBlock.scale = txCount;
       jumpmuCatch()
       {
          // no idea what triggers jumpmuCatch, but it hopefully does not happen if you don't use leanstore
@@ -172,7 +129,5 @@ int main(int argc, char** argv)
       keep_running = false;
       worker.join();
    }
-   cout << "-------------------------------------------------------------------------------------" << endl;
-   cout << calculateMTPS(begin,end,tx_count) << " M tps" << endl;
    return 0;
 }
